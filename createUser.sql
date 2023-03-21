@@ -190,7 +190,7 @@ GO
 
 --e) Tạo stored procedure với yêu cầu cho biết mã số, họ tên, ngày sinh, địa chỉ và vị trí 
 --của các cầu thủ thuộc đội bóng “SHB Đà Nẵng” và tên quốc tịch = “Brazil”, trong đó 
-tên đội bóng/câu lạc bộ và tên quốc tịch/quốc gia là 2 tham số của stored procedure.
+--tên đội bóng/câu lạc bộ và tên quốc tịch/quốc gia là 2 tham số của stored procedure.
 
 
 USE QLBongDa
