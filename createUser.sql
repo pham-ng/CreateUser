@@ -378,5 +378,32 @@ GO
 --KETQUA) của câu lạc bộ CLB đang xếp hạng cao nhất tính đến hết vòng 3 năm
 --2009.
 
+create view vCAU9 as
+select NGAYTD, TENSAN,clb1.TENCLB as TENCLB1,clb2.TENCLB as TENCLB2,KETQUA, TRANDAU.VONG
+from TRANDAU join CAULACBO as clb1 on TRANDAU.MACLB1=clb1.MACLB
+				join CAULACBO as clb2 on TRANDAU.MACLB2=clb2.MACLB
+					join BANGXH on clb1.MACLB=BANGXH.MACLB or clb2.MACLB=BANGXH.MACLB
+						join SANVD on SANVD.MASAN=TRANDAU.MASAN
+where TRANDAU.VONG<=3 and (clb1.MACLB=(select MACLB from BANGXH where HANG='1' and VONG='3' and NAM = 2009) 
+		or clb2.MACLB=(select MACLB from BANGXH where HANG='1' and VONG='3' and NAM = 2009))
+group by NGAYTD, TENSAN,clb1.TENCLB,clb2.TENCLB ,KETQUA, TRANDAU.VONG
 
+go
+select * from vCAU9
+drop view vCAU9
+go
 
+--10.Cho biết danh sách các trận đấu (NGAYTD, TENSAN, TENCLB1, TENCLB2, 
+--KETQUA) của câu lạc bộ CLB có thứ hạng thấp nhất trong bảng xếp hạng vòng 
+--3 năm 2009
+
+create view vCAU10 as
+select NGAYTD, TENSAN,clb1.TENCLB as TENCLB1,clb2.TENCLB as TENCLB2,KETQUA, TRANDAU.VONG
+from TRANDAU join CAULACBO as clb1 on TRANDAU.MACLB1=clb1.MACLB
+				join CAULACBO as clb2 on TRANDAU.MACLB2=clb2.MACLB
+					join BANGXH on clb1.MACLB=BANGXH.MACLB or clb2.MACLB=BANGXH.MACLB
+						join SANVD on SANVD.MASAN=TRANDAU.MASAN
+where TRANDAU.VONG<3 and (clb1.MACLB=(select MACLB from BANGXH where VONG='3' and HANG='5'and NAM = 2009) 
+		or clb2.MACLB=(select MACLB from BANGXH where VONG='3' and HANG='5' and NAM = 2009))
+group by NGAYTD, TENSAN,clb1.TENCLB,clb2.TENCLB ,KETQUA, TRANDAU.VONG
+go
