@@ -1,2 +1,3 @@
 # CreateUser
-LAB02-NHOM 10
+LAB02-BMCSDL-NHOM 10
+Tạo User và phân quyền trên các View, Store procedure
