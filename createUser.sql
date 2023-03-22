@@ -499,3 +499,77 @@ BEGIN
 	GROUP BY T.TENTINH
 END
 GO
+
+--SPCau6
+create procedure SPCAU6 @Vong int, @Hang int,@Nam int
+as
+		SELECT CLB.TENCLB,T.TENTINH
+		FROM CAULACBO CLB 
+			 INNER JOIN TINH T ON CLB.MATINH=T.MATINH 
+			 INNER JOIN BANGXH BXH ON BXH.MACLB=CLB.MACLB
+		WHERE BXH.NAM=@Nam AND BXH.VONG=@Vong AND BXH.HANG=@Hang
+go
+
+exec SPcau6 @vong = 3, @hang = 1,@Nam=2009
+
+--SPCau7
+create procedure SPCAU7 
+as
+		SELECT HLV.TENHLV
+		FROM  HLV_CLB hlvclb
+		      INNER JOIN HUANLUYENVIEN HLV ON hlvclb.MAHLV=HLV.MAHLV
+			  INNER JOIN CAULACBO CLB ON CLB.MACLB=hlvclb.MACLB
+		WHERE HLV.DIENTHOAI IS NULL AND hlvclb.VAITRO IS NOT NULL
+go
+
+exec spcau7
+
+--SPCau8
+create procedure SPCAU8 @TenQG nvarchar(60) 
+as
+SELECT HLV.*
+		FROM HUANLUYENVIEN HLV
+			 INNER JOIN QUOCGIA QG ON QG.MAQG=HLV.MAQG
+		WHERE NOT EXISTS (
+						  SELECT *
+						  FROM HLV_CLB
+						  WHERE HLV_CLB.MAHLV = HLV.MAHLV)
+        AND QG.TENQG LIKE @TenQG
+go
+
+exec spcau8  @tenqg = N'Việt Nam'
+go
+
+--SPCau9
+
+create  procedure SPCAU9 @Vong int, @Hang int,@Nam int
+as
+select NGAYTD, TENSAN,clb1.TENCLB as TENCLB1,clb2.TENCLB as TENCLB2,KETQUA, TRANDAU.VONG
+from TRANDAU join CAULACBO as clb1 on TRANDAU.MACLB1=clb1.MACLB
+				join CAULACBO as clb2 on TRANDAU.MACLB2=clb2.MACLB
+					join BANGXH on clb1.MACLB=BANGXH.MACLB or clb2.MACLB=BANGXH.MACLB
+						join SANVD on SANVD.MASAN=TRANDAU.MASAN
+where TRANDAU.VONG<=3 and (clb1.MACLB=(select MACLB from BANGXH where HANG=@Hang and VONG=@Vong and NAM = @Nam) 
+		or clb2.MACLB=(select MACLB from BANGXH where HANG=@Hang and VONG=@Vong and NAM = @Nam))
+group by NGAYTD, TENSAN,clb1.TENCLB,clb2.TENCLB ,KETQUA, TRANDAU.VONG
+go
+
+exec spcau9 @vong = '3' , @hang = '1',@Nam=2009
+
+
+--SPcau10 
+create procedure SPCAU10 @vong int, @hang int,@Nam int
+as
+select NGAYTD, TENSAN,clb1.TENCLB as TENCLB1,clb2.TENCLB as TENCLB2,KETQUA, TRANDAU.VONG
+from TRANDAU join CAULACBO as clb1 on TRANDAU.MACLB1=clb1.MACLB
+				join CAULACBO as clb2 on TRANDAU.MACLB2=clb2.MACLB
+					join BANGXH on clb1.MACLB=BANGXH.MACLB or clb2.MACLB=BANGXH.MACLB
+						join SANVD on SANVD.MASAN=TRANDAU.MASAN
+where TRANDAU.VONG<3 and (clb1.MACLB=(select MACLB from BANGXH where VONG=@vong and HANG=@hang and NAM = @Nam) 
+		or clb2.MACLB=(select MACLB from BANGXH where VONG=@vong and HANG=@hang and NAM = @Nam))
+group by NGAYTD, TENSAN,clb1.TENCLB,clb2.TENCLB ,KETQUA, TRANDAU.VONG
+
+go
+
+exec spcau10 @vong = '3', @hang = '5',@Nam=2009
+go
