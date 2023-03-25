@@ -182,3 +182,76 @@ GO
 use [master]
 GRANT ALTER TRACE TO BDProfile;
 GO
+
+
+--e Tạo stored procedure với yêu cầu cho biết mã số, họ tên, ngày sinh, địa chỉ và vị trí
+--của các cầu thủ thuộc đội bóng “SHB Đà Nẵng” và tên quốc tịch = “Brazil”, trong
+--đó tên đội bóng/câu lạc bộ và tên quốc tịch/quốc gia là 2 tham số của stored procedure.
+--i) Tên stored procedure: SP_SEL_NO_ENCRYPT
+
+USE QLBongDa
+GO
+CREATE PROCEDURE SP_SEL_NO_ENCRYPT @TENCLB NVARCHAR(100), @TENQG NVARCHAR(60)
+
+AS 
+BEGIN 
+	SELECT CT.MACT,CT.HOTEN,CT.NGAYSINH,CT.DIACHI,CT.VITRI
+	FROM CAUTHU CT INNER JOIN CAULACBO CLB ON CT.MACLB=CLB.MACLB
+	               INNER JOIN QUOCGIA QG ON CT.MAQG=QG.MAQG
+	WHERE CLB.TENCLB=@TENCLB AND QG.TENQG=@TENQG
+END
+
+
+--f) Tạo stored procedure với yêu cầu như câu e, với nội dung stored được mã hóa.
+USE QLBongDa
+GO
+CREATE PROCEDURE SP_SEL_ENCRYPT @TENCLB NVARCHAR(100), @TENQG NVARCHAR(60) 
+WITH ENCRYPTION
+
+AS 
+BEGIN 
+	SELECT CT.MACT,CT.HOTEN,CT.NGAYSINH,CT.DIACHI,CT.VITRI
+	FROM CAUTHU CT INNER JOIN CAULACBO CLB ON CT.MACLB=CLB.MACLB
+	               INNER JOIN QUOCGIA QG ON CT.MAQG=QG.MAQG
+	WHERE CLB.TENCLB=@TENCLB AND QG.TENQG=@TENQG
+END
+
+--g)  Thực thi 2 stored procedure trên với tham số truyền vào 
+--@TenCLB = “SHB Đà Nẵng” ,@TenQG = “Brazil”,
+GO
+EXEC SP_SEL_NO_ENCRYPT @TENCLB=N'SHB Đà Nẵng', @TenQG = N'Brazil';
+EXEC SP_SEL_ENCRYPT @TENCLB=N'SHB Đà Nẵng', @TenQG = N'Brazil';
+--
+GO
+EXEC sp_helptext 'SP_SEL_NO_ENCRYPT'
+GO
+EXEC sp_helptext 'SP_SEL_ENCRYPT'
+GO
+
+
+--h) Giả sử trong CSDL có 100 stored procedure, có cách nào để Encrypt toàn bộ 100 stored
+--procedure trước khi cài đặt cho khách hàng không? Nếu có, hãy mô tả các bước thực hiện.
+
+
+--Khởi tạo một biến để chứa tên của từng stored procedure trong CSDL:
+DECLARE @name VARCHAR(128)
+
+--Khởi tạo một con trỏ để lấy tên của từng stored procedure:
+DECLARE cur CURSOR FOR SELECT name FROM sys.objects WHERE type = 'P'
+
+--Mở con trỏ, lấy tên của stored procedure đầu tiên:
+OPEN cur
+
+FETCH NEXT FROM cur INTO @name
+--Sử dụng vòng lặp while để lặp qua từng stored procedure trong CSDL và encrypt:
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    DECLARE @sql NVARCHAR(MAX)
+    SET @sql = N'ALTER PROCEDURE ' + QUOTENAME(@name) + N' WITH ENCRYPTION'
+    EXEC sp_executesql @sql
+
+    FETCH NEXT FROM cur INTO @name
+END
+--Đóng và giải phóng con trỏ:
+CLOSE cur
+DEALLOCATE cur
