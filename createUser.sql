@@ -241,6 +241,28 @@ GO
 --procedure trước khi cài đặt cho khách hàng không? Nếu có, hãy mô tả các bước thực hiện.
 
 
+--Khởi tạo một biến để chứa tên của từng stored procedure trong CSDL:
+DECLARE @name VARCHAR(128)
+
+--Khởi tạo một con trỏ để lấy tên của từng stored procedure:
+DECLARE cur CURSOR FOR SELECT name FROM sys.objects WHERE type = 'P'
+
+--Mở con trỏ, lấy tên của stored procedure đầu tiên:
+OPEN cur
+
+FETCH NEXT FROM cur INTO @name
+--Sử dụng vòng lặp while để lặp qua từng stored procedure trong CSDL và encrypt:
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    DECLARE @sql NVARCHAR(MAX)
+    SET @sql = N'ALTER PROCEDURE ' + QUOTENAME(@name) + N' WITH ENCRYPTION'
+    EXEC sp_executesql @sql
+
+    FETCH NEXT FROM cur INTO @name
+END
+--Đóng và giải phóng con trỏ:
+CLOSE cur
+DEALLOCATE cur
 
 --i) Tạo và phân quyền trên Views:
 
